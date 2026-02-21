@@ -1,0 +1,108 @@
+2026-02-22 00:11:07 | INFO     | pipeline | ════════════════════════════════════════════════════════════
+2026-02-22 00:11:07 | INFO     | pipeline |   ML DRIFT MONITOR — PIPELINE START
+2026-02-22 00:11:07 | INFO     | pipeline | ════════════════════════════════════════════════════════════
+2026-02-22 00:11:07 | INFO     | pipeline | 
+📦 Loading datasets …
+2026-02-22 00:11:07 | INFO     | pipeline | 
+🔍 Detecting column types …
+2026-02-22 00:11:07 | INFO     | pipeline | Features: 4 numerical, 6 categorical
+2026-02-22 00:11:07 | INFO     | pipeline | 
+📊 Running drift tests …
+2026-02-22 00:11:07 | WARNING  | pipeline | 🚨 RETRAINING TRIGGERED — statistical drift (10/10 features)
+2026-02-22 00:11:07 | INFO     | pipeline | No existing model — building default classifier.
+2026-02-22 00:11:13 | INFO     | pipeline | 
+💾 Drift report saved → data/drift_report.json
+2026-02-22 00:11:13 | INFO     | pipeline | 
+════════════════════════════════════════════════════════════
+2026-02-22 00:11:13 | INFO     | pipeline |   PIPELINE COMPLETE | Drift: True | Retrained: True
+2026-02-22 00:11:13 | INFO     | pipeline | ════════════════════════════════════════════════════════════
+2026-02-22 00:24:48 | INFO     | pipeline | ════════════════════════════════════════════════════════════
+2026-02-22 00:24:48 | INFO     | pipeline |   ML DRIFT MONITOR — PIPELINE START
+2026-02-22 00:24:48 | INFO     | pipeline | ════════════════════════════════════════════════════════════
+2026-02-22 00:24:48 | INFO     | pipeline | 
+📦 Loading datasets …
+2026-02-22 00:24:48 | INFO     | pipeline | 
+🔍 Detecting column types …
+2026-02-22 00:24:48 | INFO     | pipeline | Features: 4 numerical, 6 categorical
+2026-02-22 00:24:48 | INFO     | pipeline | 
+📊 Running drift tests …
+2026-02-22 00:24:48 | WARNING  | pipeline | 🚨 RETRAINING TRIGGERED — statistical drift (10/10 features)
+2026-02-22 00:24:48 | INFO     | pipeline | No existing model — building default classifier.
+2026-02-22 00:24:49 | INFO     | pipeline | 
+💾 Drift report saved → data/drift_report.json
+2026-02-22 00:24:49 | INFO     | pipeline | 
+════════════════════════════════════════════════════════════
+2026-02-22 00:24:49 | INFO     | pipeline |   PIPELINE COMPLETE | Drift: True | Retrained: True
+2026-02-22 00:24:49 | INFO     | pipeline | ════════════════════════════════════════════════════════════
+2026-02-22 00:27:18 | INFO     | pipeline | ════════════════════════════════════════════════════════════
+2026-02-22 00:27:18 | INFO     | pipeline |   ML DRIFT MONITOR — PIPELINE START
+2026-02-22 00:27:18 | INFO     | pipeline | ════════════════════════════════════════════════════════════
+2026-02-22 00:27:18 | INFO     | pipeline | 
+📦 Loading datasets …
+2026-02-22 00:27:18 | INFO     | pipeline | 
+🔍 Detecting column types …
+2026-02-22 00:27:18 | INFO     | pipeline | Features: 4 numerical, 6 categorical
+2026-02-22 00:27:18 | INFO     | pipeline | 
+📊 Running drift tests …
+2026-02-22 00:27:18 | WARNING  | pipeline | 🚨 RETRAINING TRIGGERED — statistical drift (10/10 features)
+2026-02-22 00:27:18 | INFO     | pipeline | No existing model — building default classifier.
+2026-02-22 00:27:18 | INFO     | pipeline | 
+💾 Drift report saved → data/drift_report.json
+2026-02-22 00:27:18 | INFO     | pipeline | 
+════════════════════════════════════════════════════════════
+2026-02-22 00:27:18 | INFO     | pipeline |   PIPELINE COMPLETE | Drift: True | Retrained: True
+2026-02-22 00:27:18 | INFO     | pipeline | ════════════════════════════════════════════════════════════
+2026-02-22 00:33:24 | INFO     | pipeline | ════════════════════════════════════════════════════════════
+2026-02-22 00:33:24 | INFO     | pipeline |   ML DRIFT MONITOR — PIPELINE START
+2026-02-22 00:33:24 | INFO     | pipeline | ════════════════════════════════════════════════════════════
+2026-02-22 00:33:24 | INFO     | pipeline | 
+📦 Loading datasets …
+2026-02-22 00:33:24 | INFO     | pipeline | 
+🔍 Detecting column types …
+2026-02-22 00:33:24 | INFO     | pipeline | Features: 4 numerical, 6 categorical
+2026-02-22 00:33:24 | INFO     | pipeline | 
+📊 Running drift tests …
+2026-02-22 00:33:24 | WARNING  | pipeline | 🚨 RETRAINING TRIGGERED — statistical drift (10/10 features)
+2026-02-22 00:33:24 | INFO     | pipeline | No existing model — building default classifier.
+2026-02-22 00:33:24 | INFO     | pipeline | 
+💾 Drift report saved → data/drift_report.json
+2026-02-22 00:33:24 | INFO     | pipeline | 
+════════════════════════════════════════════════════════════
+2026-02-22 00:33:24 | INFO     | pipeline |   PIPELINE COMPLETE | Drift: True | Retrained: True
+2026-02-22 00:33:24 | INFO     | pipeline | ════════════════════════════════════════════════════════════
+2026-02-22 00:44:17 | INFO     | pipeline | ════════════════════════════════════════════════════════════
+2026-02-22 00:44:17 | INFO     | pipeline |   ML DRIFT MONITOR — PIPELINE START
+2026-02-22 00:44:17 | INFO     | pipeline | ════════════════════════════════════════════════════════════
+2026-02-22 00:44:17 | INFO     | pipeline | 
+📦 Loading datasets …
+2026-02-22 00:44:17 | INFO     | pipeline | 
+🔍 Detecting column types …
+2026-02-22 00:44:17 | INFO     | pipeline | Features: 4 numerical, 6 categorical
+2026-02-22 00:44:17 | INFO     | pipeline | 
+📊 Running drift tests …
+2026-02-22 00:44:17 | WARNING  | pipeline | 🚨 RETRAINING TRIGGERED — statistical drift (10/10 features)
+2026-02-22 00:44:17 | INFO     | pipeline | No existing model — building default classifier.
+2026-02-22 00:44:18 | INFO     | pipeline | 
+💾 Drift report saved → data/drift_report.json
+2026-02-22 00:44:18 | INFO     | pipeline | 
+════════════════════════════════════════════════════════════
+2026-02-22 00:44:18 | INFO     | pipeline |   PIPELINE COMPLETE | Drift: True | Retrained: True
+2026-02-22 00:44:18 | INFO     | pipeline | ════════════════════════════════════════════════════════════
+2026-02-22 00:51:46 | INFO     | pipeline | ════════════════════════════════════════════════════════════
+2026-02-22 00:51:46 | INFO     | pipeline |   ML DRIFT MONITOR — PIPELINE START
+2026-02-22 00:51:46 | INFO     | pipeline | ════════════════════════════════════════════════════════════
+2026-02-22 00:51:46 | INFO     | pipeline | 
+📦 Loading datasets …
+2026-02-22 00:51:46 | INFO     | pipeline | 
+🔍 Detecting column types …
+2026-02-22 00:51:46 | INFO     | pipeline | Features: 4 numerical, 6 categorical
+2026-02-22 00:51:46 | INFO     | pipeline | 
+📊 Running drift tests …
+2026-02-22 00:51:46 | WARNING  | pipeline | 🚨 RETRAINING TRIGGERED — statistical drift (10/10 features)
+2026-02-22 00:51:46 | INFO     | pipeline | No existing model — building default classifier.
+2026-02-22 00:51:47 | INFO     | pipeline | 
+💾 Drift report saved → data/drift_report.json
+2026-02-22 00:51:47 | INFO     | pipeline | 
+════════════════════════════════════════════════════════════
+2026-02-22 00:51:47 | INFO     | pipeline |   PIPELINE COMPLETE | Drift: True | Retrained: True
+2026-02-22 00:51:47 | INFO     | pipeline | ════════════════════════════════════════════════════════════

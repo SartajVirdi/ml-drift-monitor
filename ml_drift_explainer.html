@@ -1,0 +1,1330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ML Drift Monitor — Project Explainer</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:ital,wght@0,400;0,500;1,400&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #050810;
+    --surface: #0d1117;
+    --surface2: #141b26;
+    --border: rgba(255,255,255,0.07);
+    --accent: #00e5ff;
+    --accent2: #ff4d6d;
+    --accent3: #a8ff78;
+    --text: #e8eaf0;
+    --muted: #5a6480;
+    --glow: rgba(0,229,255,0.15);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 15px;
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,229,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,229,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 48px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(5,8,16,0.85);
+    backdrop-filter: blur(16px);
+  }
+
+  .nav-logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 17px;
+    letter-spacing: -0.5px;
+    color: var(--accent);
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 32px;
+    list-style: none;
+  }
+
+  .nav-links a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    transition: color 0.2s;
+  }
+
+  .nav-links a:hover { color: var(--accent); }
+
+  .hero {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    text-align: center;
+    padding: 120px 24px 80px;
+    z-index: 1;
+  }
+
+  .hero-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(0,229,255,0.08);
+    border: 1px solid rgba(0,229,255,0.2);
+    border-radius: 100px;
+    padding: 6px 16px;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 40px;
+    animation: fadeUp 0.8s ease both;
+  }
+
+  .hero-tag::before {
+    content: '';
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.8); }
+  }
+
+  .hero h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(52px, 9vw, 110px);
+    font-weight: 800;
+    line-height: 0.95;
+    letter-spacing: -3px;
+    margin-bottom: 32px;
+    animation: fadeUp 0.8s 0.1s ease both;
+  }
+
+  .hero h1 em {
+    font-style: normal;
+    color: transparent;
+    -webkit-text-stroke: 1.5px var(--accent);
+  }
+
+  .hero-sub {
+    font-family: 'Instrument Serif', serif;
+    font-size: clamp(18px, 2.5vw, 26px);
+    font-style: italic;
+    color: var(--muted);
+    max-width: 600px;
+    margin-bottom: 56px;
+    animation: fadeUp 0.8s 0.2s ease both;
+  }
+
+  .hero-orb {
+    position: absolute;
+    width: 600px; height: 600px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(0,229,255,0.08) 0%, transparent 70%);
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
+
+  section {
+    position: relative;
+    z-index: 1;
+    padding: 100px 48px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .section-label {
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .section-label::after {
+    content: '';
+    flex: 1;
+    max-width: 60px;
+    height: 1px;
+    background: var(--accent);
+    opacity: 0.4;
+  }
+
+  h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(32px, 5vw, 56px);
+    font-weight: 800;
+    letter-spacing: -2px;
+    line-height: 1.05;
+    margin-bottom: 24px;
+  }
+
+  .lead {
+    font-family: 'Instrument Serif', serif;
+    font-size: 20px;
+    font-style: italic;
+    color: var(--muted);
+    max-width: 680px;
+    margin-bottom: 64px;
+    line-height: 1.6;
+  }
+
+  .arch-diagram {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 48px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .arch-diagram::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  }
+
+  .arch-flow {
+    display: grid;
+    grid-template-columns: repeat(6, auto);
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    row-gap: 24px;
+  }
+
+  @media (max-width: 900px) {
+    .arch-flow {
+      grid-template-columns: repeat(3, auto);
+    }
+  }
+
+  .arch-node {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 24px;
+    text-align: center;
+    min-width: 130px;
+    transition: all 0.3s;
+    cursor: default;
+  }
+
+  .arch-node:hover {
+    border-color: var(--accent);
+    box-shadow: 0 0 24px var(--glow);
+    transform: translateY(-3px);
+  }
+
+  .arch-node-icon {
+    font-size: 22px;
+    margin-bottom: 8px;
+    color: var(--accent);
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+  }
+
+  .arch-node-label {
+    font-family: 'Syne', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    color: var(--text);
+  }
+
+  .arch-node-sub {
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+
+  .arch-arrow {
+    color: var(--accent);
+    font-size: 20px;
+    padding: 0 8px;
+    opacity: 0.5;
+  }
+
+  .arch-node.highlight {
+    border-color: rgba(0,229,255,0.4);
+    background: rgba(0,229,255,0.05);
+  }
+
+  .arch-node.alert-node {
+    border-color: rgba(255,77,109,0.4);
+    background: rgba(255,77,109,0.05);
+  }
+
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 24px;
+    margin-top: 48px;
+  }
+
+  .drift-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s;
+  }
+
+  .drift-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--card-color, var(--accent));
+    transform: scaleX(0);
+    transition: transform 0.3s;
+  }
+
+  .drift-card:hover::after { transform: scaleX(1); }
+
+  .drift-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+  }
+
+  .card-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 64px;
+    font-weight: 800;
+    line-height: 1;
+    color: var(--card-color, var(--accent));
+    opacity: 0.15;
+    position: absolute;
+    top: 20px; right: 24px;
+  }
+
+  .card-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: var(--card-color, var(--accent));
+  }
+
+  .card-body {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+
+  .card-formula {
+    margin-top: 16px;
+    background: var(--surface2);
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 12px;
+    color: var(--accent3);
+    border-left: 2px solid var(--accent3);
+  }
+
+  .test-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 48px;
+    font-size: 13px;
+  }
+
+  .test-table th {
+    font-family: 'Syne', sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 12px 20px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .test-table td {
+    padding: 18px 20px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+
+  .test-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+  .test-name {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    color: var(--text);
+    font-size: 14px;
+  }
+
+  .badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 100px;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+
+  .badge-num { background: rgba(0,229,255,0.12); color: var(--accent); }
+  .badge-cat { background: rgba(168,255,120,0.12); color: var(--accent3); }
+  .badge-both { background: rgba(255,77,109,0.12); color: var(--accent2); }
+
+  .threshold-pill {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 12px;
+    color: var(--accent);
+    display: inline-block;
+  }
+
+  .phases {
+    margin-top: 64px;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .phase {
+    display: grid;
+    grid-template-columns: 80px 1fr;
+    gap: 32px;
+    align-items: start;
+    position: relative;
+  }
+
+  .phase:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    left: 39px;
+    top: 64px;
+    bottom: -32px;
+    width: 1px;
+    background: var(--border);
+  }
+
+  .phase-num {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 16px;
+    color: var(--accent);
+    flex-shrink: 0;
+    position: relative;
+    z-index: 1;
+    margin-top: 8px;
+    transition: all 0.3s;
+  }
+
+  .phase:hover .phase-num {
+    background: var(--accent);
+    color: var(--bg);
+    box-shadow: 0 0 24px var(--glow);
+  }
+
+  .phase-content {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px 32px;
+    margin-bottom: 32px;
+    transition: all 0.3s;
+  }
+
+  .phase:hover .phase-content {
+    border-color: rgba(0,229,255,0.2);
+  }
+
+  .phase-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .phase-desc {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.7;
+    margin-bottom: 16px;
+  }
+
+  .code-snippet {
+    background: #0a0f1a;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 20px;
+    font-size: 12px;
+    color: var(--accent3);
+    overflow-x: auto;
+    line-height: 1.6;
+    white-space: pre;
+    font-family: 'DM Mono', monospace;
+  }
+
+  .code-snippet .kw { color: #ff79c6; }
+  .code-snippet .fn { color: #8be9fd; }
+  .code-snippet .str { color: #f1fa8c; }
+  .code-snippet .cm { color: #6272a4; font-style: italic; }
+  .code-snippet .num { color: var(--accent); }
+
+  .sim-visual {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-top: 48px;
+  }
+
+  .dist-chart {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px;
+    text-align: center;
+  }
+
+  .dist-chart-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+
+  .dist-svg { width: 100%; height: 120px; }
+
+  .drift-meters {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-top: 32px;
+  }
+
+  .meter-row {
+    display: grid;
+    grid-template-columns: 130px 1fr 80px;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .meter-label {
+    font-size: 12px;
+    color: var(--muted);
+    text-align: right;
+  }
+
+  .meter-bar {
+    height: 8px;
+    background: var(--surface2);
+    border-radius: 100px;
+    overflow: hidden;
+  }
+
+  .meter-fill {
+    height: 100%;
+    border-radius: 100px;
+    transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+    animation: growBar 1.5s ease both;
+  }
+
+  @keyframes growBar {
+    from { width: 0 !important; }
+  }
+
+  .meter-val {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .perf-chart-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 40px;
+    margin-top: 48px;
+  }
+
+  .perf-chart-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: 0.05em;
+    margin-bottom: 32px;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+
+  .retrain-flow {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-top: 48px;
+  }
+
+  .retrain-step {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px;
+    text-align: center;
+    position: relative;
+  }
+
+  .retrain-step::after {
+    content: '→';
+    position: absolute;
+    right: -14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted);
+    font-size: 18px;
+    z-index: 2;
+  }
+
+  .retrain-step:last-child::after { display: none; }
+
+  .retrain-icon {
+    font-size: 20px;
+    margin-bottom: 12px;
+    color: var(--accent);
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+  }
+
+  .retrain-label {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+
+  .retrain-desc { font-size: 11px; color: var(--muted); }
+
+  .stack-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 40px;
+  }
+
+  .stack-pill {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    padding: 10px 20px;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+  }
+
+  .stack-pill:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    transform: translateY(-2px);
+  }
+
+  .stack-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+  }
+
+  .resume-box {
+    background: linear-gradient(135deg, rgba(0,229,255,0.05), rgba(168,255,120,0.05));
+    border: 1px solid rgba(0,229,255,0.2);
+    border-radius: 16px;
+    padding: 48px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .resume-box::before {
+    content: '"';
+    position: absolute;
+    top: -20px; left: 24px;
+    font-family: 'Instrument Serif', serif;
+    font-size: 160px;
+    color: var(--accent);
+    opacity: 0.08;
+    line-height: 1;
+  }
+
+  .resume-text {
+    font-family: 'Instrument Serif', serif;
+    font-size: 22px;
+    font-style: italic;
+    line-height: 1.6;
+    color: var(--text);
+    position: relative;
+    z-index: 1;
+  }
+
+  .resume-text strong { color: var(--accent); font-style: normal; }
+
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 40px 48px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 12px;
+    letter-spacing: 0.05em;
+    position: relative;
+    z-index: 1;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .reveal {
+    opacity: 0;
+    transform: translateY(32px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 0;
+  }
+
+  .alert-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,77,109,0.1);
+    border: 1px solid rgba(255,77,109,0.3);
+    border-radius: 100px;
+    padding: 4px 12px;
+    font-size: 11px;
+    color: var(--accent2);
+    letter-spacing: 0.08em;
+  }
+
+  .ok-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(168,255,120,0.1);
+    border: 1px solid rgba(168,255,120,0.3);
+    border-radius: 100px;
+    padding: 4px 12px;
+    font-size: 11px;
+    color: var(--accent3);
+    letter-spacing: 0.08em;
+  }
+</style>
+</head>
+<body>
+
+<!-- Nav -->
+<nav>
+  <div class="nav-logo">ML Drift Monitor</div>
+  <ul class="nav-links">
+    <li><a href="#problem">Problem</a></li>
+    <li><a href="#architecture">Architecture</a></li>
+    <li><a href="#drift">Drift</a></li>
+    <li><a href="#pipeline">Pipeline</a></li>
+    <li><a href="#retrain">Retraining</a></li>
+    <li><a href="#stack">Stack</a></li>
+  </ul>
+</nav>
+
+<!-- Hero -->
+<div class="hero">
+  <div class="hero-orb"></div>
+  <div class="hero-tag">Portfolio Project · ML Engineering</div>
+  <h1>ML Drift<br><em>Monitoring</em><br>System</h1>
+  <p class="hero-sub">An end-to-end production-grade system that detects when your ML model stops working — and fixes itself.</p>
+</div>
+
+<hr class="divider">
+
+<!-- Problem -->
+<section id="problem" class="reveal">
+  <div class="section-label">01 — The Problem</div>
+  <h2>Models rot<br>in silence.</h2>
+  <p class="lead">You train a model, it hits 92% accuracy, you ship it. Six months later it's making bad predictions — but nobody noticed because there were no errors, just quietly wrong outputs.</p>
+
+  <div class="cards-grid">
+    <div class="drift-card" style="--card-color: #00e5ff;">
+      <div class="card-num">01</div>
+      <div class="card-title">Training Distribution</div>
+      <div class="card-body">Your model learns patterns from historical data. It builds a "mental model" of what the world looks like.</div>
+    </div>
+    <div class="drift-card" style="--card-color: #ff4d6d;">
+      <div class="card-num">02</div>
+      <div class="card-title">The World Changes</div>
+      <div class="card-body">Customer behaviour shifts. Prices inflate. New products launch. The world your model learned no longer exists.</div>
+    </div>
+    <div class="drift-card" style="--card-color: #a8ff78;">
+      <div class="card-num">03</div>
+      <div class="card-title">Silent Degradation</div>
+      <div class="card-body">No exceptions are thrown. The model keeps predicting. But accuracy silently collapses — often undetected for months.</div>
+    </div>
+    <div class="drift-card" style="--card-color: #ffb347;">
+      <div class="card-num">04</div>
+      <div class="card-title">Drift Detection</div>
+      <div class="card-body">We solve this by statistically comparing what the model sees today vs. what it was trained on — and alerting when they diverge.</div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- Architecture -->
+<section id="architecture" class="reveal">
+  <div class="section-label">02 — Architecture</div>
+  <h2>How it all<br>fits together.</h2>
+  <p class="lead">Five phases, fully automated — from raw data to live dashboard with retraining events logged and auditable.</p>
+
+  <div class="arch-diagram">
+    <!-- Row 1: main pipeline -->
+    <div style="display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:0;margin-bottom:24px;">
+      <div class="arch-node highlight">
+        <div class="arch-node-icon">DB</div>
+        <div class="arch-node-label">Dataset</div>
+        <div class="arch-node-sub">Telco Churn CSV</div>
+      </div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-node">
+        <div class="arch-node-icon">PP</div>
+        <div class="arch-node-label">Preprocess</div>
+        <div class="arch-node-sub">Clean + Split</div>
+      </div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-node highlight">
+        <div class="arch-node-icon">ML</div>
+        <div class="arch-node-label">Train Model</div>
+        <div class="arch-node-sub">CatBoost</div>
+      </div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-node">
+        <div class="arch-node-icon">SIM</div>
+        <div class="arch-node-label">Simulate Drift</div>
+        <div class="arch-node-sub">6 Batches</div>
+      </div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-node highlight">
+        <div class="arch-node-icon">DT</div>
+        <div class="arch-node-label">Detect Drift</div>
+        <div class="arch-node-sub">KS · Chi2 · PSI</div>
+      </div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-node alert-node">
+        <div class="arch-node-icon" style="color:var(--accent2);">RT</div>
+        <div class="arch-node-label">Alert + Retrain</div>
+        <div class="arch-node-sub">Auto trigger</div>
+      </div>
+    </div>
+    <!-- Row 2: dashboard output -->
+    <div style="display:flex;align-items:center;justify-content:center;">
+      <div class="arch-arrow" style="transform:rotate(90deg);display:block;margin-right:8px;">→</div>
+      <div class="arch-node highlight" style="min-width:160px;">
+        <div class="arch-node-icon">UI</div>
+        <div class="arch-node-label">Dashboard</div>
+        <div class="arch-node-sub">Streamlit</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Project file tree -->
+  <div style="margin-top:40px;">
+    <div class="code-snippet">
+<span class="cm"># Project Structure</span>
+ml_drift_project/
+├── <span class="fn">data/</span>               <span class="cm"># Dataset + pipeline results cache</span>
+├── <span class="fn">models/</span>             <span class="cm"># Saved CatBoost model (.cbm)</span>
+├── <span class="fn">logs/</span>               <span class="cm"># Daily logs + retrain audit CSV</span>
+├── <span class="fn">drift/</span>
+│   ├── drift_simulator.py   <span class="cm"># Injects 3 types of drift per batch</span>
+│   ├── statistical_tests.py <span class="cm"># KS, Chi-Square, PSI from scratch</span>
+│   ├── detector.py          <span class="cm"># Orchestrates → DriftReport</span>
+│   └── performance_tracker.py
+├── <span class="fn">training/</span>
+│   ├── data_loader.py       <span class="cm"># Download, clean, split</span>
+│   └── trainer.py           <span class="cm"># Train, evaluate, save, reload</span>
+├── <span class="fn">dashboard/</span>
+│   └── app.py               <span class="cm"># Streamlit dashboard</span>
+├── <span class="fn">utils/</span>
+│   ├── config.py            <span class="cm"># All thresholds in one place</span>
+│   └── logger.py            <span class="cm"># Structured logging</span>
+└── <span class="fn">main.py</span>             <span class="cm"># Run everything</span>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- Drift Types -->
+<section id="drift" class="reveal">
+  <div class="section-label">03 — Drift Detection</div>
+  <h2>Three ways<br>data breaks.</h2>
+  <p class="lead">We implemented three industry-standard statistical tests. Each catches a different failure mode — together they form a complete drift detection system.</p>
+
+  <table class="test-table">
+    <thead>
+      <tr>
+        <th>Test</th>
+        <th>Feature Type</th>
+        <th>What It Measures</th>
+        <th>Threshold</th>
+        <th>Status Example</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>
+          <div class="test-name">Kolmogorov–Smirnov</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px;">scipy.stats.ks_2samp</div>
+        </td>
+        <td><span class="badge badge-num">Numerical</span></td>
+        <td style="color:var(--muted);font-size:13px;">Max distance between two empirical CDFs. KS=0 means identical distributions, KS=1 means completely different.</td>
+        <td><span class="threshold-pill">&gt; 0.10</span></td>
+        <td><span class="alert-chip">ALERT: tenure 0.20</span></td>
+      </tr>
+      <tr>
+        <td>
+          <div class="test-name">Chi-Square Test</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px;">scipy.stats.chi2_contingency</div>
+        </td>
+        <td><span class="badge badge-cat">Categorical</span></td>
+        <td style="color:var(--muted);font-size:13px;">Compares observed vs expected category frequencies. High chi² or low p-value → the category mix has shifted.</td>
+        <td><span class="threshold-pill">p &lt; 0.05</span></td>
+        <td><span class="alert-chip">ALERT: Contract drifted</span></td>
+      </tr>
+      <tr>
+        <td>
+          <div class="test-name">Population Stability Index</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px;">Custom implementation</div>
+        </td>
+        <td><span class="badge badge-num">Numerical</span></td>
+        <td style="color:var(--muted);font-size:13px;">Credit scoring standard. Bins both distributions, compares proportions. PSI &lt;0.1 stable, 0.1–0.2 moderate, &gt;0.2 significant.</td>
+        <td><span class="threshold-pill">&gt; 0.20</span></td>
+        <td><span class="alert-chip">ALERT: MonthlyCharges 0.67</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div style="margin-top:48px;">
+    <div class="section-label" style="margin-bottom:24px;">PSI Formula</div>
+    <div class="code-snippet">
+<span class="cm"># Population Stability Index — the industry-standard drift magnitude</span>
+<span class="cm"># PSI = Σ (actual% − expected%) × ln(actual% / expected%)</span>
+
+<span class="kw">def</span> <span class="fn">compute_psi</span>(reference, current, bins=<span class="num">10</span>):
+    breakpoints = np.percentile(reference, np.linspace(<span class="num">0</span>, <span class="num">100</span>, bins+<span class="num">1</span>))
+    ref_pct = np.histogram(reference, bins=breakpoints)[<span class="num">0</span>] / len(reference)
+    cur_pct = np.histogram(current,   bins=breakpoints)[<span class="num">0</span>] / len(current)
+    ref_pct = ref_pct.clip(<span class="num">1e-6</span>)   <span class="cm"># avoid log(0)</span>
+    cur_pct = cur_pct.clip(<span class="num">1e-6</span>)
+    <span class="kw">return</span> np.sum((cur_pct - ref_pct) * np.log(cur_pct / ref_pct))
+    </div>
+  </div>
+
+  <!-- Feature drift meters -->
+  <div style="margin-top:48px; background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:40px;">
+    <div class="section-label" style="margin-bottom:24px;">Feature Drift Score — Batch 6 (Highest Drift)</div>
+    <div class="drift-meters">
+      <div class="meter-row">
+        <div class="meter-label">tenure</div>
+        <div class="meter-bar"><div class="meter-fill" style="width:98%;background:linear-gradient(90deg,#ff4d6d,#ff8a65);"></div></div>
+        <div class="meter-val" style="color:#ff4d6d;">0.98</div>
+      </div>
+      <div class="meter-row">
+        <div class="meter-label">MonthlyCharges</div>
+        <div class="meter-bar"><div class="meter-fill" style="width:92%;background:linear-gradient(90deg,#ff4d6d,#ff8a65);"></div></div>
+        <div class="meter-val" style="color:#ff4d6d;">0.92</div>
+      </div>
+      <div class="meter-row">
+        <div class="meter-label">Contract</div>
+        <div class="meter-bar"><div class="meter-fill" style="width:100%;background:linear-gradient(90deg,#ff4d6d,#ff8a65);"></div></div>
+        <div class="meter-val" style="color:#ff4d6d;">1.00</div>
+      </div>
+      <div class="meter-row">
+        <div class="meter-label">PaymentMethod</div>
+        <div class="meter-bar"><div class="meter-fill" style="width:100%;background:linear-gradient(90deg,#ff4d6d,#ff8a65);"></div></div>
+        <div class="meter-val" style="color:#ff4d6d;">1.00</div>
+      </div>
+      <div class="meter-row">
+        <div class="meter-label">TotalCharges</div>
+        <div class="meter-bar"><div class="meter-fill" style="width:48%;background:linear-gradient(90deg,#a8ff78,#00e5ff);"></div></div>
+        <div class="meter-val" style="color:#a8ff78;">0.48</div>
+      </div>
+      <div class="meter-row">
+        <div class="meter-label">gender</div>
+        <div class="meter-bar"><div class="meter-fill" style="width:100%;background:linear-gradient(90deg,#ff4d6d,#ff8a65);"></div></div>
+        <div class="meter-val" style="color:#ff4d6d;">1.00</div>
+      </div>
+      <div class="meter-row">
+        <div class="meter-label">SeniorCitizen</div>
+        <div class="meter-bar"><div class="meter-fill" style="width:12%;background:linear-gradient(90deg,#a8ff78,#00e5ff);"></div></div>
+        <div class="meter-val" style="color:#a8ff78;">0.12</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- Pipeline Walkthrough -->
+<section id="pipeline" class="reveal">
+  <div class="section-label">04 — Pipeline Walkthrough</div>
+  <h2>Five phases,<br>fully automated.</h2>
+  <p class="lead">Run <code style="color:var(--accent);background:var(--surface2);padding:2px 8px;border-radius:4px;">python main.py</code> and all five phases execute sequentially. Here's what happens under the hood.</p>
+
+  <div class="phases">
+
+    <div class="phase">
+      <div class="phase-num">1</div>
+      <div class="phase-content">
+        <div class="phase-title">Data Loading and Preprocessing</div>
+        <div class="phase-desc">We use the Telco Customer Churn dataset — 7,000 rows, 19 features (mix of numerical and categorical). The dataset is auto-generated synthetically if not present. We clean types, handle missing values, and split 85/15 into train/validation while preserving class balance via stratification.</div>
+        <div class="code-snippet">
+<span class="fn">X_train</span>, <span class="fn">X_val</span>, <span class="fn">y_train</span>, <span class="fn">y_val</span> = train_test_split(
+    X, y, test_size=<span class="num">0.15</span>, stratify=y, random_state=<span class="num">42</span>
+)
+        </div>
+      </div>
+    </div>
+
+    <div class="phase">
+      <div class="phase-num">2</div>
+      <div class="phase-content">
+        <div class="phase-title">Baseline Model Training</div>
+        <div class="phase-desc">CatBoostClassifier is trained with early stopping on the validation set. It handles categorical features natively — no one-hot encoding required. We track F1-macro as our primary metric because it's robust under class imbalance (our dataset has ~60% churners).</div>
+        <div class="code-snippet">
+model = <span class="fn">CatBoostClassifier</span>(
+    iterations=<span class="num">500</span>, learning_rate=<span class="num">0.05</span>,
+    depth=<span class="num">6</span>, early_stopping_rounds=<span class="num">50</span>
+)
+<span class="cm"># Baseline F1-macro: ~0.68</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="phase">
+      <div class="phase-num">3</div>
+      <div class="phase-content">
+        <div class="phase-title">Drift Simulation</div>
+        <div class="phase-desc">We create 6 production batches with escalating drift (drift_level 0.0 to 1.0). Three types of drift are injected: <strong style="color:var(--accent)">numerical shift</strong> (tenure drops 15 months, MonthlyCharges rises $25), <strong style="color:var(--accent3)">categorical skew</strong> (Contract shifts to Month-to-month, PaymentMethod toward Electronic check), and <strong style="color:var(--accent2)">label drift</strong> (churn rate rises from 60% to 80%).</div>
+        <div class="code-snippet">
+<span class="cm"># Batch 1: drift_level=0.00 — churn_rate=66%  — stable</span>
+<span class="cm"># Batch 4: drift_level=0.60 — churn_rate=75%  — moderate drift</span>
+<span class="cm"># Batch 6: drift_level=1.00 — churn_rate=81%  — severe drift</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="phase">
+      <div class="phase-num">4</div>
+      <div class="phase-content">
+        <div class="phase-title">Drift Detection Per Batch</div>
+        <div class="phase-desc">For each batch we run all three statistical tests across all features, then compute a unified drift_score per feature (0–1). The overall_drift_flag triggers if more than 30% of features are flagged OR max PSI exceeds 0.20. Performance drift triggers if F1 drops more than 0.05 from baseline.</div>
+        <div class="code-snippet">
+overall_drift = (frac_drifted &gt; <span class="num">0.30</span>) <span class="kw">or</span> (max_psi &gt; <span class="num">0.20</span>)
+perf_drift    = (baseline_f1 - current_f1) &gt; <span class="num">0.05</span>
+should_retrain = overall_drift <span class="kw">or</span> perf_drift
+        </div>
+      </div>
+    </div>
+
+    <div class="phase">
+      <div class="phase-num">5</div>
+      <div class="phase-content">
+        <div class="phase-title">Dashboard and Audit Log</div>
+        <div class="phase-desc">All results are serialised to <code style="color:var(--accent3)">data/pipeline_results.pkl</code> and read by the Streamlit dashboard. Every retraining event is logged to <code style="color:var(--accent3)">logs/retrain_log.csv</code> with timestamp, reason, pre/post F1 — a full audit trail.</div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- Auto-Retraining -->
+<section id="retrain" class="reveal">
+  <div class="section-label">05 — Auto-Retraining</div>
+  <h2>The model fixes<br>itself.</h2>
+  <p class="lead">When drift exceeds thresholds, the system retrains automatically on the latest batch, replaces the saved model, and logs the event — no human intervention needed.</p>
+
+  <div class="retrain-flow">
+    <div class="retrain-step">
+      <div class="retrain-icon">DRIFT</div>
+      <div class="retrain-label">Drift Detected</div>
+      <div class="retrain-desc">KS, PSI or F1 drop crosses threshold. overall_drift_flag = True</div>
+    </div>
+    <div class="retrain-step">
+      <div class="retrain-icon">TRAIN</div>
+      <div class="retrain-label">Retrain Triggered</div>
+      <div class="retrain-desc">Model retrained from scratch on latest production batch data</div>
+    </div>
+    <div class="retrain-step">
+      <div class="retrain-icon">SAVE</div>
+      <div class="retrain-label">Model Replaced</div>
+      <div class="retrain-desc">New model saved to disk. Event logged with pre/post F1 scores.</div>
+    </div>
+  </div>
+
+  <!-- Retrain log sample -->
+  <div style="margin-top:40px;background:#0a0f1a;border:1px solid var(--border);border-radius:8px;padding:20px 0 8px;">
+    <div style="font-size:11px;color:var(--muted);letter-spacing:0.15em;text-transform:uppercase;margin-bottom:12px;padding:0 16px;"># logs/retrain_log.csv — actual output from pipeline run</div>
+    <div style="overflow-x:auto;">
+      <table style="width:100%;border-collapse:collapse;font-size:12px;font-family:'DM Mono',monospace;">
+        <thead>
+          <tr style="border-bottom:1px solid var(--accent);opacity:0.6;">
+            <th style="padding:10px 16px;text-align:left;color:var(--accent);font-weight:500;letter-spacing:0.08em;white-space:nowrap;">timestamp</th>
+            <th style="padding:10px 16px;text-align:left;color:var(--accent);font-weight:500;letter-spacing:0.08em;">batch_id</th>
+            <th style="padding:10px 16px;text-align:left;color:var(--accent);font-weight:500;letter-spacing:0.08em;">reason</th>
+            <th style="padding:10px 16px;text-align:left;color:var(--accent);font-weight:500;letter-spacing:0.08em;">pre_f1</th>
+            <th style="padding:10px 16px;text-align:left;color:var(--accent);font-weight:500;letter-spacing:0.08em;">post_f1</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="border-bottom:1px solid var(--border);">
+            <td style="padding:10px 16px;color:var(--muted);white-space:nowrap;">2026-02-21T13:44:01</td>
+            <td style="padding:10px 16px;color:var(--text);text-align:center;">2</td>
+            <td style="padding:10px 16px;color:var(--text);">F1 drop = 0.0522</td>
+            <td style="padding:10px 16px;color:var(--accent2);">0.6288</td>
+            <td style="padding:10px 16px;color:var(--accent3);">0.6590</td>
+          </tr>
+          <tr style="border-bottom:1px solid var(--border);">
+            <td style="padding:10px 16px;color:var(--muted);white-space:nowrap;">2026-02-21T13:44:02</td>
+            <td style="padding:10px 16px;color:var(--text);text-align:center;">3</td>
+            <td style="padding:10px 16px;color:var(--text);">F1 drop = 0.0941</td>
+            <td style="padding:10px 16px;color:var(--accent2);">0.5649</td>
+            <td style="padding:10px 16px;color:var(--accent3);">0.6083</td>
+          </tr>
+          <tr style="border-bottom:1px solid var(--border);">
+            <td style="padding:10px 16px;color:var(--muted);white-space:nowrap;">2026-02-21T13:44:03</td>
+            <td style="padding:10px 16px;color:var(--text);text-align:center;">4</td>
+            <td style="padding:10px 16px;color:#f1fa8c;">statistical drift (5 features)</td>
+            <td style="padding:10px 16px;color:var(--accent2);">0.4987</td>
+            <td style="padding:10px 16px;color:var(--accent3);">0.5421</td>
+          </tr>
+          <tr style="border-bottom:1px solid var(--border);">
+            <td style="padding:10px 16px;color:var(--muted);white-space:nowrap;">2026-02-21T13:44:04</td>
+            <td style="padding:10px 16px;color:var(--text);text-align:center;">5</td>
+            <td style="padding:10px 16px;color:#f1fa8c;">statistical drift (5 features)</td>
+            <td style="padding:10px 16px;color:var(--accent2);">0.5071</td>
+            <td style="padding:10px 16px;color:var(--accent3);">0.5450</td>
+          </tr>
+          <tr>
+            <td style="padding:10px 16px;color:var(--muted);white-space:nowrap;">2026-02-21T13:44:05</td>
+            <td style="padding:10px 16px;color:var(--text);text-align:center;">6</td>
+            <td style="padding:10px 16px;color:#f1fa8c;">statistical drift (5 features)</td>
+            <td style="padding:10px 16px;color:var(--accent2);">0.4932</td>
+            <td style="padding:10px 16px;color:var(--accent3);">0.5437</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- F1 chart SVG -->
+  <div class="perf-chart-wrap">
+    <div class="perf-chart-title">F1-macro over 6 Production Batches</div>
+    <svg viewBox="0 0 700 200" style="width:100%;height:200px;">
+      <line x1="60" y1="20" x2="680" y2="20" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+      <line x1="60" y1="60" x2="680" y2="60" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+      <line x1="60" y1="100" x2="680" y2="100" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+      <line x1="60" y1="140" x2="680" y2="140" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+      <line x1="60" y1="180" x2="680" y2="180" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+      <text x="50" y="24" text-anchor="end" font-size="10" fill="#5a6480">0.70</text>
+      <text x="50" y="64" text-anchor="end" font-size="10" fill="#5a6480">0.65</text>
+      <text x="50" y="104" text-anchor="end" font-size="10" fill="#5a6480">0.60</text>
+      <text x="50" y="144" text-anchor="end" font-size="10" fill="#5a6480">0.55</text>
+      <text x="50" y="184" text-anchor="end" font-size="10" fill="#5a6480">0.50</text>
+      <line x1="60" y1="36" x2="680" y2="36" stroke="#a8ff78" stroke-width="1" stroke-dasharray="4,4" opacity="0.5"/>
+      <text x="685" y="40" font-size="9" fill="#a8ff78">Baseline</text>
+      <line x1="60" y1="96" x2="680" y2="96" stroke="#ff4d6d" stroke-width="1" stroke-dasharray="4,4" opacity="0.5"/>
+      <text x="685" y="100" font-size="9" fill="#ff4d6d">Trigger</text>
+      <line x1="188" y1="20" x2="188" y2="180" stroke="#ffb347" stroke-width="1" stroke-dasharray="3,3" opacity="0.6"/>
+      <line x1="298" y1="20" x2="298" y2="180" stroke="#ffb347" stroke-width="1" stroke-dasharray="3,3" opacity="0.6"/>
+      <line x1="408" y1="20" x2="408" y2="180" stroke="#ffb347" stroke-width="1" stroke-dasharray="3,3" opacity="0.6"/>
+      <line x1="518" y1="20" x2="518" y2="180" stroke="#ffb347" stroke-width="1" stroke-dasharray="3,3" opacity="0.6"/>
+      <line x1="628" y1="20" x2="628" y2="180" stroke="#ffb347" stroke-width="1" stroke-dasharray="3,3" opacity="0.6"/>
+      <polyline
+        points="78,60 188,80 298,120 408,160 518,150 628,170"
+        fill="none"
+        stroke="#7c6af7"
+        stroke-width="2.5"
+        stroke-linejoin="round"
+      />
+      <polygon
+        points="78,60 188,80 298,120 408,160 518,150 628,170 628,180 78,180"
+        fill="url(#f1grad)"
+        opacity="0.15"
+      />
+      <defs>
+        <linearGradient id="f1grad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#7c6af7"/>
+          <stop offset="100%" stop-color="transparent"/>
+        </linearGradient>
+      </defs>
+      <circle cx="78" cy="60" r="5" fill="#7c6af7" stroke="#050810" stroke-width="2"/>
+      <circle cx="188" cy="80" r="5" fill="#7c6af7" stroke="#050810" stroke-width="2"/>
+      <circle cx="298" cy="120" r="5" fill="#7c6af7" stroke="#050810" stroke-width="2"/>
+      <circle cx="408" cy="160" r="5" fill="#ff4d6d" stroke="#050810" stroke-width="2"/>
+      <circle cx="518" cy="150" r="5" fill="#ff4d6d" stroke="#050810" stroke-width="2"/>
+      <circle cx="628" cy="170" r="5" fill="#ff4d6d" stroke="#050810" stroke-width="2"/>
+      <text x="78" y="196" text-anchor="middle" font-size="10" fill="#5a6480">Batch 1</text>
+      <text x="188" y="196" text-anchor="middle" font-size="10" fill="#5a6480">Batch 2</text>
+      <text x="298" y="196" text-anchor="middle" font-size="10" fill="#5a6480">Batch 3</text>
+      <text x="408" y="196" text-anchor="middle" font-size="10" fill="#ffb347">Retrain B4</text>
+      <text x="518" y="196" text-anchor="middle" font-size="10" fill="#ffb347">Retrain B5</text>
+      <text x="628" y="196" text-anchor="middle" font-size="10" fill="#ffb347">Retrain B6</text>
+    </svg>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- Tech Stack -->
+<section id="stack" class="reveal">
+  <div class="section-label">06 — Tech Stack</div>
+  <h2>Built with<br>industry tools.</h2>
+  <p class="lead">Every library choice mirrors what you'd find in a real ML engineering team's production stack.</p>
+
+  <div class="stack-grid">
+    <div class="stack-pill"><div class="stack-dot" style="background:#ff6b35;"></div>CatBoost — Model</div>
+    <div class="stack-pill"><div class="stack-dot" style="background:#f7931e;"></div>scikit-learn — Metrics + Fallback</div>
+    <div class="stack-pill"><div class="stack-dot" style="background:#00e5ff;"></div>SciPy — KS + Chi-Square Tests</div>
+    <div class="stack-pill"><div class="stack-dot" style="background:#a8ff78;"></div>NumPy — PSI Implementation</div>
+    <div class="stack-pill"><div class="stack-dot" style="background:#ff4d6d;"></div>Pandas — Data Wrangling</div>
+    <div class="stack-pill"><div class="stack-dot" style="background:#7c6af7;"></div>Streamlit — Dashboard UI</div>
+    <div class="stack-pill"><div class="stack-dot" style="background:#636efa;"></div>Plotly — Charts</div>
+    <div class="stack-pill"><div class="stack-dot" style="background:#ffb347;"></div>joblib — Model Persistence</div>
+    <div class="stack-pill"><div class="stack-dot" style="background:#aaa;"></div>Python logging — Audit Trail</div>
+  </div>
+
+  <div style="margin-top:48px; display:grid; grid-template-columns:1fr 1fr; gap:24px;">
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:28px;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;margin-bottom:16px;color:var(--accent)">Why CatBoost?</div>
+      <div style="font-size:13px;color:var(--muted);line-height:1.8;">
+        Handles categorical features natively — no one-hot encoding needed.
+        Strong baseline performance on tabular data. Industry standard at
+        Yandex, Sber, and many fintech companies. Native early stopping.
+      </div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:28px;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;margin-bottom:16px;color:var(--accent3)">Why PSI + KS + Chi2?</div>
+      <div style="font-size:13px;color:var(--muted);line-height:1.8;">
+        KS is sensitive to shape changes. PSI gives a magnitude score (0–1)
+        with industry-standard thresholds from credit scoring. Chi2 handles
+        the categorical side. Together they catch every drift pattern.
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- Project Summary -->
+<section class="reveal">
+  <div class="section-label">07 — Project Summary</div>
+  <h2>What this<br>system does.</h2>
+  <p class="lead">A concise overview of what the ML Drift Monitoring System detects, how it responds, and why it matters in production environments.</p>
+
+  <div class="cards-grid">
+    <div class="drift-card" style="--card-color:#00e5ff;">
+      <div class="card-title">Continuous Monitoring</div>
+      <div class="card-body">The system watches incoming data batches in real time, comparing them against the original training distribution to catch changes before they impact users.</div>
+    </div>
+    <div class="drift-card" style="--card-color:#a8ff78;">
+      <div class="card-title">Statistical Rigor</div>
+      <div class="card-body">Three complementary tests — KS, Chi-Square, and PSI — cover both numerical and categorical features, leaving no drift pattern undetected.</div>
+    </div>
+    <div class="drift-card" style="--card-color:#ff4d6d;">
+      <div class="card-title">Automated Recovery</div>
+      <div class="card-body">When drift is confirmed, the system retrains the model automatically on fresh data and replaces the old version — no manual intervention required.</div>
+    </div>
+    <div class="drift-card" style="--card-color:#7c6af7;">
+      <div class="card-title">Full Transparency</div>
+      <div class="card-body">Every decision is logged. The dashboard shows exactly which features drifted, by how much, and what action was taken — giving teams full visibility at all times.</div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  Built with Python · CatBoost · Streamlit · SciPy · Plotly
+  &nbsp;·&nbsp; ML Drift Monitoring System &nbsp;·&nbsp; Portfolio Project
+</footer>
+
+<script>
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry, i) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => entry.target.classList.add('visible'), i * 80);
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1 });
+  reveals.forEach(el => observer.observe(el));
+</script>
+</body>
+</html>

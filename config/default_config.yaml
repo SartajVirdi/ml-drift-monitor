@@ -1,0 +1,55 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# ml_drift_monitor/config/default_config.yaml
+#
+# This is the single source of truth for the drift monitoring system.
+# Copy this file, fill in your paths, and run:
+#   python main.py --config config/my_config.yaml
+# ─────────────────────────────────────────────────────────────────────────────
+
+# ── Data ─────────────────────────────────────────────────────────────────────
+data:
+  reference_path: "data/sample/reference.csv"   # Training / baseline dataset
+  production_path: "data/sample/production.csv" # New production batch CSV
+  label_column: "target"                         # Target column name. Set to null if no labels.
+  # label_column: null
+
+# ── Columns ──────────────────────────────────────────────────────────────────
+columns:
+  # Leave both lists empty [] for auto-detection based on dtype.
+  # Auto-detection: float/int → numerical, object/bool → categorical.
+  # Override here if auto-detection is wrong for your dataset.
+  numerical: []       # e.g. ["age", "income", "tenure"]
+  categorical: []     # e.g. ["gender", "contract_type", "region"]
+  drop: []            # Columns to ignore entirely (e.g. IDs, timestamps)
+
+# ── Model ─────────────────────────────────────────────────────────────────────
+model:
+  path: null          # Path to saved model. null = skip performance tracking.
+                      # Supported formats: .pkl, .joblib, .cbm (CatBoost)
+  # path: "models/my_model.pkl"
+  framework: "auto"  # auto | sklearn | catboost
+                      # auto = infer from file extension
+
+# ── Drift Thresholds ─────────────────────────────────────────────────────────
+thresholds:
+  ks_statistic: 0.10        # KS distance above this → feature flagged
+  psi: 0.20                 # PSI above this → significant drift
+  chi2_p_value: 0.05        # p-value below this → categorical drift
+  f1_drop: 0.05             # Absolute F1 drop → performance drift
+  drift_feature_fraction: 0.30  # If >30% features drifted → overall alert
+
+# ── PSI Binning ───────────────────────────────────────────────────────────────
+psi:
+  bins: 10
+
+# ── Retraining ───────────────────────────────────────────────────────────────
+retraining:
+  enabled: true             # Set false to disable auto-retraining
+  requires_labels: true     # Only retrain if labels are present
+  save_path: "models/retrained_model.pkl"
+
+# ── Output ───────────────────────────────────────────────────────────────────
+output:
+  report_path: "data/drift_report.json"
+  log_path: "logs/drift_monitor.log"
+  retrain_log_path: "logs/retrain_log.csv"

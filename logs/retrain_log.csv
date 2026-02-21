@@ -1,0 +1,7 @@
+timestamp,reason,pre_f1,post_f1
+2026-02-21T18:41:13.314350+00:00,statistical drift (10/10 features),0.0,0.442
+2026-02-21T18:54:49.341916+00:00,statistical drift (10/10 features),0.0,0.442
+2026-02-21T18:57:18.905225+00:00,statistical drift (10/10 features),0.0,0.442
+2026-02-21T19:03:24.706096+00:00,statistical drift (10/10 features),0.0,0.442
+2026-02-21T19:14:18.057244+00:00,statistical drift (10/10 features),0.0,0.442
+2026-02-21T19:21:47.034240+00:00,statistical drift (10/10 features),0.0,0.442
