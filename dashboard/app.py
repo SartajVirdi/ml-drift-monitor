@@ -442,7 +442,27 @@ def main():
             render_dashboard()
         else:
             st.markdown('<div class="info-box">👈 Configure your datasets in the sidebar, then click <b>Run Analysis</b>.</div>', unsafe_allow_html=True)
+
+            st.markdown("#### No data? Try the sample dataset:")
+            sample_ref  = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "sample", "reference.csv")
+            sample_prod = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "sample", "production.csv")
+            if os.path.exists(sample_ref) and os.path.exists(sample_prod):
+                col1, col2 = st.columns(2)
+                with col1:
+                    with open(sample_ref, "rb") as f:
+                        st.download_button("Download reference.csv", data=f, file_name="reference.csv", mime="text/csv", use_container_width=True)
+                with col2:
+                    with open(sample_prod, "rb") as f:
+                        st.download_button("Download production.csv", data=f, file_name="production.csv", mime="text/csv", use_container_width=True)
+                st.caption("Upload both files in the sidebar, set label column to **Churn**, then click Run Analysis.")
+
+            st.markdown("---")
             st.markdown("#### What this tool does:")
+
+
+
+
+          
             c1,c2,c3,c4 = st.columns(4)
             with c1: st.markdown("📊 **KS Test**\n\nNumerical distribution shift")
             with c2: st.markdown("📋 **Chi-Square**\n\nCategorical frequency shift")
