@@ -776,6 +776,53 @@
     color: var(--accent3);
     letter-spacing: 0.08em;
   }
+
+  .hero-buttons {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    justify-content: center;
+    animation: fadeUp 0.8s 0.3s ease both;
+  }
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    background: var(--accent);
+    color: var(--bg);
+    text-decoration: none;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 0.05em;
+    padding: 14px 28px;
+    border-radius: 100px;
+    transition: all 0.2s;
+  }
+  .btn-primary:hover {
+    background: #33ecff;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(0,229,255,0.3);
+  }
+  .btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    background: transparent;
+    color: var(--text);
+    text-decoration: none;
+    font-family: 'Syne', sans-serif;
+    font-weight: 600;
+    font-size: 13px;
+    letter-spacing: 0.05em;
+    padding: 14px 28px;
+    border-radius: 100px;
+    border: 1px solid var(--border);
+    transition: all 0.2s;
+  }
+  .btn-secondary:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    transform: translateY(-2px);
+  }
 </style>
 </head>
 <body>
@@ -790,6 +837,7 @@
     <li><a href="#pipeline">Pipeline</a></li>
     <li><a href="#retrain">Retraining</a></li>
     <li><a href="#stack">Stack</a></li>
+    <li><a href="https://mldriftmonitor.streamlit.app" target="_blank" style="color:var(--accent);">Live Demo</a></li>
   </ul>
 </nav>
 
@@ -799,6 +847,10 @@
   <div class="hero-tag">Portfolio Project · ML Engineering</div>
   <h1>ML Drift<br><em>Monitoring</em><br>System</h1>
   <p class="hero-sub">An end-to-end production-grade system that detects when your ML model stops working — and fixes itself.</p>
+  <div class="hero-buttons">
+    <a href="https://mldriftmonitor.streamlit.app" target="_blank" class="btn-primary">View Live Dashboard</a>
+    <a href="https://github.com/SartajVirdi/ml-drift-monitor" target="_blank" class="btn-secondary">View on GitHub</a>
+  </div>
 </div>
 
 <hr class="divider">
